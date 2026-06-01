@@ -216,6 +216,9 @@ export default function AdminCoursesPage() {
                 </td>
                 <td className="p-4 text-right">
                   <div className="flex justify-end space-x-2">
+                    <Link href={`/admin/courses/${course.id}`} className="p-2 text-blue-500 hover:bg-blue-500/10 rounded transition-colors" title="Quản lý Bài giảng">
+                      <Video size={16} />
+                    </Link>
                     <button className="p-2 text-primary hover:bg-primary/10 rounded transition-colors" title="Sửa khóa học" onClick={() => handleOpenEditModal(course)}>
                       <Edit size={16} />
                     </button>

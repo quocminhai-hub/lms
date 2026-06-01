@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { Plus, Edit, Trash2, Video, X } from "lucide-react";
+import Link from "next/link";
 
 export default function AdminCoursesPage() {
   const [courses, setCourses] = useState<any[]>([]);

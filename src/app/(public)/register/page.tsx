@@ -48,12 +48,14 @@ export default function RegisterPage() {
         const courseId = params.get('course') || 'shopee-affiliate';
 
         // Tạo đơn đăng ký
-        await supabase.from('enrollments').insert({
+        const { error: enrollError } = await supabase.from('enrollments').insert({
           user_id: data.user.id,
           course_id: courseId,
           plan: formData.plan,
           amount: selectedPlanInfo?.amount || 799000
         });
+
+        if (enrollError) throw enrollError;
       }
 
       setStep("payment");

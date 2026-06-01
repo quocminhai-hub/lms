@@ -12,14 +12,38 @@ export function DashboardSidebar() {
   const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
+    let subscription: any;
+
     const fetchUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
-        if (data) setProfile(data);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+        if (data) {
+          setProfile(data);
+        } else {
+          console.error("Profile fetch error:", error);
+        }
+      } else {
+        setProfile(null);
       }
     };
+
     fetchUser();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+          if (data) setProfile(data);
+        } else {
+          setProfile(null);
+        }
+      }
+    );
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
   const handleLogout = async () => {

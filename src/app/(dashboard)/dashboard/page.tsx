@@ -1,12 +1,29 @@
-import { BookOpen, CheckCircle, Clock, ListVideo } from "lucide-react";
+"use client";
+
+import { CheckCircle2, Clock, PlayCircle, Star, Video, BookOpen, Trophy, CheckCircle, ListVideo } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 export default function DashboardPage() {
+  const [name, setName] = useState("Học viên");
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase.from('profiles').select('full_name').eq('id', user.id).single();
+        if (data?.full_name) setName(data.full_name);
+      }
+    };
+    fetchUser();
+  }, []);
+
   return (
     <div className="max-w-5xl mx-auto">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground flex items-center">
-          Xin chào, MINH AI! <span className="ml-2">👋</span>
+          Xin chào, {name}! <span className="ml-2">👋</span>
         </h1>
         <p className="text-muted-foreground mt-1">Tiếp tục hành trình học tập của bạn</p>
       </div>

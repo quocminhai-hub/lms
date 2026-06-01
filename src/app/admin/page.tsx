@@ -1,18 +1,53 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Check, X } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 export default function AdminPage() {
-  const [users, setUsers] = useState([
-    { id: 1, name: "Nguyễn Văn A", email: "nva@gmail.com", phone: "0901234567", plan: "ULTRA", amount: "799,000", status: "pending", date: "2023-10-27" },
-    { id: 2, name: "Trần Thị B", email: "ttb@gmail.com", phone: "0987654321", plan: "BASE", amount: "499,000", status: "pending", date: "2023-10-27" },
-    { id: 3, name: "Lê Văn C", email: "lvc@gmail.com", phone: "0912345678", plan: "ULTRA", amount: "799,000", status: "approved", date: "2023-10-26" }
-  ]);
+  const [enrollments, setEnrollments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleApprove = (id: number) => {
-    setUsers(users.map(u => u.id === id ? { ...u, status: "approved" } : u));
-    alert("Đã duyệt tài khoản thành công! Học viên có thể đăng nhập ngay.");
+  const fetchEnrollments = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('enrollments')
+      .select('*, profiles(full_name, phone), courses(title)')
+      .order('created_at', { ascending: false });
+
+    if (!error && data) {
+      setEnrollments(data);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchEnrollments();
+  }, []);
+
+  const handleApprove = async (id: string) => {
+    const { error } = await supabase
+      .from('enrollments')
+      .update({ status: 'approved' })
+      .eq('id', id);
+
+    if (!error) {
+      setEnrollments(enrollments.map(e => e.id === id ? { ...e, status: "approved" } : e));
+      alert("Đã duyệt tài khoản thành công! Học viên có thể vào học ngay.");
+    } else {
+      alert("Lỗi khi duyệt: " + error.message);
+    }
+  };
+
+  const handleReject = async (id: string) => {
+    const { error } = await supabase
+      .from('enrollments')
+      .update({ status: 'rejected' })
+      .eq('id', id);
+
+    if (!error) {
+      setEnrollments(enrollments.map(e => e.id === id ? { ...e, status: "rejected" } : e));
+    }
   };
 
   return (
@@ -23,7 +58,7 @@ export default function AdminPage() {
           <p className="text-muted-foreground mt-1">Quản lý các tài khoản đăng ký mới và chờ thanh toán</p>
         </div>
         <div className="bg-card border border-border px-4 py-2 rounded-lg text-sm">
-          Tổng chờ duyệt: <span className="text-primary font-bold">{users.filter(u => u.status === "pending").length}</span>
+          Tổng chờ duyệt: <span className="text-primary font-bold">{enrollments.filter(e => e.status === "pending").length}</span>
         </div>
       </div>
 
@@ -32,7 +67,7 @@ export default function AdminPage() {
           <thead>
             <tr className="bg-secondary/50 border-b border-border text-sm text-muted-foreground">
               <th className="p-4 font-medium">Học viên</th>
-              <th className="p-4 font-medium">Liên hệ</th>
+              <th className="p-4 font-medium">Khóa học</th>
               <th className="p-4 font-medium">Gói đăng ký</th>
               <th className="p-4 font-medium">Số tiền</th>
               <th className="p-4 font-medium">Trạng thái</th>
@@ -40,44 +75,56 @@ export default function AdminPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-border text-sm">
-            {users.map((user) => (
-              <tr key={user.id} className="hover:bg-secondary/20 transition-colors">
+            {loading ? (
+              <tr><td colSpan={6} className="p-4 text-center text-muted-foreground">Đang tải dữ liệu...</td></tr>
+            ) : enrollments.length === 0 ? (
+              <tr><td colSpan={6} className="p-4 text-center text-muted-foreground">Chưa có học viên nào đăng ký.</td></tr>
+            ) : enrollments.map((enrollment) => (
+              <tr key={enrollment.id} className="hover:bg-secondary/20 transition-colors">
                 <td className="p-4">
-                  <div className="font-semibold text-foreground">{user.name}</div>
-                  <div className="text-xs text-muted-foreground">{user.date}</div>
+                  <div className="font-semibold text-foreground">{enrollment.profiles?.full_name || 'Khách'}</div>
+                  <div className="text-xs text-muted-foreground">{enrollment.profiles?.phone || 'N/A'}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{new Date(enrollment.created_at).toLocaleDateString('vi-VN')}</div>
                 </td>
                 <td className="p-4">
-                  <div>{user.email}</div>
-                  <div className="text-xs text-muted-foreground">{user.phone}</div>
+                  <div className="font-medium max-w-[200px] truncate">{enrollment.courses?.title || enrollment.course_id}</div>
                 </td>
                 <td className="p-4">
-                  <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${user.plan === 'ULTRA' ? 'bg-primary/20 text-primary' : 'bg-blue-500/20 text-blue-400'}`}>
-                    {user.plan}
+                  <span className={`inline-block px-2 py-1 rounded text-xs font-semibold uppercase ${enrollment.plan === 'ultra' ? 'bg-primary/20 text-primary' : 'bg-blue-500/20 text-blue-400'}`}>
+                    {enrollment.plan}
                   </span>
                 </td>
-                <td className="p-4 font-medium">{user.amount} đ</td>
+                <td className="p-4 font-medium">{enrollment.amount?.toLocaleString('vi-VN')} đ</td>
                 <td className="p-4">
-                  {user.status === "pending" ? (
+                  {enrollment.status === "pending" ? (
                     <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-500/20 text-yellow-500">
                       Chờ thanh toán
                     </span>
-                  ) : (
+                  ) : enrollment.status === "approved" ? (
                     <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-500/20 text-green-500">
                       Đã duyệt
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-500/20 text-red-500">
+                      Từ chối
                     </span>
                   )}
                 </td>
                 <td className="p-4 text-right">
-                  {user.status === "pending" ? (
+                  {enrollment.status === "pending" ? (
                     <div className="flex justify-end space-x-2">
                       <button 
-                        onClick={() => handleApprove(user.id)}
+                        onClick={() => handleApprove(enrollment.id)}
                         className="bg-primary hover:bg-primary/90 text-primary-foreground p-1.5 rounded-md transition-colors"
                         title="Duyệt (Đã nhận tiền)"
                       >
                         <Check size={16} />
                       </button>
-                      <button className="bg-destructive hover:bg-destructive/90 text-destructive-foreground p-1.5 rounded-md transition-colors bg-red-500 text-white" title="Từ chối">
+                      <button 
+                        onClick={() => handleReject(enrollment.id)}
+                        className="bg-destructive hover:bg-destructive/90 text-destructive-foreground p-1.5 rounded-md transition-colors bg-red-500 text-white" 
+                        title="Từ chối"
+                      >
                         <X size={16} />
                       </button>
                     </div>

@@ -42,7 +42,20 @@ export default function RegisterPage() {
 
       if (error) throw error;
 
-      // TODO: Can create enrollment here or wait for trigger
+      if (data.user) {
+        // Lấy course từ URL params hoặc mặc định
+        const params = new URLSearchParams(window.location.search);
+        const courseId = params.get('course') || 'shopee-affiliate';
+
+        // Tạo đơn đăng ký
+        await supabase.from('enrollments').insert({
+          user_id: data.user.id,
+          course_id: courseId,
+          plan: formData.plan,
+          amount: selectedPlanInfo?.amount || 799000
+        });
+      }
+
       setStep("payment");
     } catch (error: any) {
       setErrorMsg(error.message || "Có lỗi xảy ra khi đăng ký.");
@@ -74,6 +87,11 @@ export default function RegisterPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {errorMsg && (
+              <div className="bg-red-500/20 text-red-500 p-3 rounded-lg text-sm mb-4">
+                {errorMsg}
+              </div>
+            )}
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">Họ và tên</label>
               <input 
@@ -148,9 +166,10 @@ export default function RegisterPage() {
 
             <button 
               type="submit" 
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 rounded-lg flex items-center justify-center transition-all mt-6"
+              disabled={loading}
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 rounded-lg flex items-center justify-center transition-all mt-6 disabled:opacity-50"
             >
-              <UserPlus size={18} className="mr-2" /> Đăng Ký
+              <UserPlus size={18} className="mr-2" /> {loading ? "Đang xử lý..." : "Đăng Ký"}
             </button>
           </form>
 

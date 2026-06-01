@@ -45,18 +45,24 @@ export function DashboardSidebar() {
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (session?.user) {
-          setDebugInfo(`Auth state change: ${event}, user: ${session.user.email}`);
-          const { data, error } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
-          if (data) {
-            setProfile(data);
-            setDebugInfo(`Profile loaded on auth change. Role: ${data.role}`);
+        try {
+          if (session?.user) {
+            setDebugInfo(`Auth state change: ${event}, user: ${session.user.email}. Fetching...`);
+            const { data, error } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+            if (error) {
+              setDebugInfo(`Auth change: Profile fetch error: ${error.message}`);
+            } else if (data) {
+              setProfile(data);
+              setDebugInfo(`Profile loaded on auth change. Role: ${data.role}`);
+            } else {
+              setDebugInfo(`Auth change: Profile is empty`);
+            }
           } else {
-            setDebugInfo(`Profile error on auth change: ${error?.message}`);
+            setProfile(null);
+            setDebugInfo(`Auth state change: ${event}, no user`);
           }
-        } else {
-          setProfile(null);
-          setDebugInfo(`Auth state change: ${event}, no user`);
+        } catch (err: any) {
+          setDebugInfo(`Auth change catch error: ${err.message}`);
         }
       }
     );

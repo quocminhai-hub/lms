@@ -132,38 +132,38 @@ export function DashboardSidebar() {
             <div className="text-xs text-red-500 font-medium uppercase tracking-wider mb-2">Quản trị Hệ thống</div>
             <nav className="space-y-1">
               <Link
-                href="/dashboard/admin/users"
+                href="/admin/users"
                 className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors ${
-                  pathname === "/dashboard/admin/users"
+                  pathname === "/admin/users"
                     ? "bg-red-500/20 text-red-500 font-medium"
                     : "text-foreground hover:bg-red-500/10 hover:text-red-500"
                 }`}
               >
-                <ShieldAlert size={18} className={pathname === "/dashboard/admin/users" ? "text-red-500" : "opacity-70"} />
+                <ShieldAlert size={18} className={pathname === "/admin/users" ? "text-red-500" : "opacity-70"} />
                 <span>Duyệt học viên</span>
               </Link>
               
               <Link
-                href="/dashboard/admin/courses"
+                href="/admin/courses"
                 className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors ${
-                  pathname === "/dashboard/admin/courses"
+                  pathname === "/admin/courses"
                     ? "bg-red-500/20 text-red-500 font-medium"
                     : "text-foreground hover:bg-red-500/10 hover:text-red-500"
                 }`}
               >
-                <BookOpen size={18} className={pathname === "/dashboard/admin/courses" ? "text-red-500" : "opacity-70"} />
+                <BookOpen size={18} className={pathname === "/admin/courses" ? "text-red-500" : "opacity-70"} />
                 <span>Quản lý Khóa học</span>
               </Link>
               
               <Link
-                href="/dashboard/admin/revenue"
+                href="/admin/revenue"
                 className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors ${
-                  pathname === "/dashboard/admin/revenue"
+                  pathname === "/admin/revenue"
                     ? "bg-red-500/20 text-red-500 font-medium"
                     : "text-foreground hover:bg-red-500/10 hover:text-red-500"
                 }`}
               >
-                <ShieldAlert size={18} className={pathname === "/dashboard/admin/revenue" ? "text-red-500" : "opacity-70"} />
+                <ShieldAlert size={18} className={pathname === "/admin/revenue" ? "text-red-500" : "opacity-70"} />
                 <span>Doanh thu</span>
               </Link>
             </nav>

@@ -7,15 +7,20 @@ import { supabase } from "@/lib/supabase";
 export default function AdminPage() {
   const [enrollments, setEnrollments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState("");
 
   const fetchEnrollments = async () => {
     setLoading(true);
+    setErrorMsg("");
     const { data, error } = await supabase
       .from('enrollments')
       .select('*, profiles(full_name, phone), courses(title)')
       .order('created_at', { ascending: false });
 
-    if (!error && data) {
+    if (error) {
+      console.error("Error fetching enrollments:", error);
+      setErrorMsg("Lỗi tải đơn đăng ký: " + error.message);
+    } else if (data) {
       setEnrollments(data);
     }
     setLoading(false);
@@ -61,6 +66,12 @@ export default function AdminPage() {
           Tổng chờ duyệt: <span className="text-primary font-bold">{enrollments.filter(e => e.status === "pending").length}</span>
         </div>
       </div>
+
+      {errorMsg && (
+        <div className="bg-red-500/20 text-red-500 p-4 rounded-lg text-sm mb-6 border border-red-500/30">
+          {errorMsg}
+        </div>
+      )}
 
       <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
         <table className="w-full text-left border-collapse">

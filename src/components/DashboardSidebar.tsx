@@ -74,14 +74,44 @@ export function DashboardSidebar() {
 
         {profile?.role === 'admin' && (
           <div className="mt-8 px-3">
-            <div className="text-xs text-red-500 font-medium uppercase tracking-wider mb-2">Quản trị</div>
-            <Link
-              href="/admin"
-              className="flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors bg-red-500/10 text-red-500 hover:bg-red-500/20 font-medium"
-            >
-              <ShieldAlert size={18} />
-              <span>Vào trang Admin</span>
-            </Link>
+            <div className="text-xs text-red-500 font-medium uppercase tracking-wider mb-2">Quản trị Hệ thống</div>
+            <nav className="space-y-1">
+              <Link
+                href="/dashboard/admin/users"
+                className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors ${
+                  pathname === "/dashboard/admin/users"
+                    ? "bg-red-500/20 text-red-500 font-medium"
+                    : "text-foreground hover:bg-red-500/10 hover:text-red-500"
+                }`}
+              >
+                <ShieldAlert size={18} className={pathname === "/dashboard/admin/users" ? "text-red-500" : "opacity-70"} />
+                <span>Duyệt học viên</span>
+              </Link>
+              
+              <Link
+                href="/dashboard/admin/courses"
+                className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors ${
+                  pathname === "/dashboard/admin/courses"
+                    ? "bg-red-500/20 text-red-500 font-medium"
+                    : "text-foreground hover:bg-red-500/10 hover:text-red-500"
+                }`}
+              >
+                <BookOpen size={18} className={pathname === "/dashboard/admin/courses" ? "text-red-500" : "opacity-70"} />
+                <span>Quản lý Khóa học</span>
+              </Link>
+              
+              <Link
+                href="/dashboard/admin/revenue"
+                className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors ${
+                  pathname === "/dashboard/admin/revenue"
+                    ? "bg-red-500/20 text-red-500 font-medium"
+                    : "text-foreground hover:bg-red-500/10 hover:text-red-500"
+                }`}
+              >
+                <ShieldAlert size={18} className={pathname === "/dashboard/admin/revenue" ? "text-red-500" : "opacity-70"} />
+                <span>Doanh thu</span>
+              </Link>
+            </nav>
           </div>
         )}
       </div>

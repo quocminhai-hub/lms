@@ -10,21 +10,34 @@ export function DashboardSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [profile, setProfile] = useState<any>(null);
+  const [debugInfo, setDebugInfo] = useState<string>("Loading...");
 
   useEffect(() => {
     let subscription: any;
 
     const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-        if (data) {
-          setProfile(data);
-        } else {
-          console.error("Profile fetch error:", error);
+      try {
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError) {
+          setDebugInfo(`Auth error: ${authError.message}`);
+          return;
         }
-      } else {
-        setProfile(null);
+        if (user) {
+          setDebugInfo(`Auth: logged in as ${user.email}. Fetching profile...`);
+          const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+          if (data) {
+            setProfile(data);
+            setDebugInfo(`Profile loaded. Role: ${data.role}`);
+          } else {
+            console.error("Profile fetch error:", error);
+            setDebugInfo(`Profile error: ${error?.message || 'No profile found'}`);
+          }
+        } else {
+          setProfile(null);
+          setDebugInfo("Auth: Not logged in (no user)");
+        }
+      } catch (err: any) {
+        setDebugInfo(`Catch error: ${err.message}`);
       }
     };
 
@@ -33,10 +46,17 @@ export function DashboardSidebar() {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (session?.user) {
-          const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
-          if (data) setProfile(data);
+          setDebugInfo(`Auth state change: ${event}, user: ${session.user.email}`);
+          const { data, error } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+          if (data) {
+            setProfile(data);
+            setDebugInfo(`Profile loaded on auth change. Role: ${data.role}`);
+          } else {
+            setDebugInfo(`Profile error on auth change: ${error?.message}`);
+          }
         } else {
           setProfile(null);
+          setDebugInfo(`Auth state change: ${event}, no user`);
         }
       }
     );
@@ -62,13 +82,18 @@ export function DashboardSidebar() {
   return (
     <div className="w-64 h-screen border-r border-border bg-card flex flex-col justify-between fixed top-0 left-0 p-4">
       <div>
-        <div className="flex items-center space-x-3 mb-8 px-2">
-          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm uppercase">
-            {profile?.full_name ? profile.full_name.charAt(0) : "M"}
+        <div className="flex flex-col mb-8 px-2">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm uppercase">
+              {profile?.full_name ? profile.full_name.charAt(0) : "M"}
+            </div>
+            <div>
+              <h2 className="font-semibold text-foreground text-sm truncate max-w-[140px]">{profile?.full_name || "MINH AI"}</h2>
+              <p className="text-xs text-muted-foreground opacity-70 capitalize">{profile?.role === 'admin' ? 'Quản trị viên' : 'Học viên'}</p>
+            </div>
           </div>
-          <div>
-            <h2 className="font-semibold text-foreground text-sm truncate max-w-[140px]">{profile?.full_name || "MINH AI"}</h2>
-            <p className="text-xs text-muted-foreground opacity-70 capitalize">{profile?.role === 'admin' ? 'Quản trị viên' : 'Học viên'}</p>
+          <div className="mt-2 text-[10px] text-muted-foreground bg-secondary/30 p-1.5 rounded border border-border/40 font-mono break-all">
+            Debug: {debugInfo}
           </div>
         </div>
 

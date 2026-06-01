@@ -93,6 +93,18 @@ create trigger on_auth_user_created
   for each row execute procedure public.handle_new_user();
 ```
 
+### Bước 1.3: Thêm Dữ Liệu Khóa Học Mặc Định (Seed Data)
+Để tránh lỗi khóa ngoại (`Foreign Key Constraint`) khi học viên mới chọn đăng ký khóa học mà Database chưa tồn tại, hãy chạy lệnh chèn dữ liệu mặc định sau:
+```sql
+insert into public.courses (id, title, description, price_base, price_ultra, is_published)
+values 
+('shopee-affiliate', 'AI - Shopee Affiliate | Dùng AI tạo nguồn thu nhập thứ 2', 'Khóa học hướng dẫn bạn xây dựng kênh video AI từ con số 0, kiếm tiền tự động với 7 dạng video viral.', 499000, 799000, true),
+('quyen-dong-hanh', 'Quyền ĐỒNG HÀNH', 'Đặc quyền đồng hành cùng chuyên gia.', 499000, 799000, true),
+('tao-video-ai', 'Tạo VIDEO AI - Dùng AI tạo nguồn thu nhập thứ 2', 'Khóa học hướng dẫn bạn xây dựng kênh video AI từ con số 0, kiếm tiền tự động với 7 dạng video viral.', 499000, 799000, true),
+('name-to-net', 'NAME-TO-NET — Phương pháp BIẾN TÊN THÀNH TIỀN', 'Khóa 14 ngày xây thương hiệu cá nhân từ trải nghiệm sống — biến tên thành dòng tiền online bền vững trong kỷ nguyên AI.', 499000, 799000, true)
+on conflict (id) do nothing;
+```
+
 ---
 
 ## 2. Thiết Lập Bảo Mật & Phân Quyền (RLS Policies)
